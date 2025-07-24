@@ -1,0 +1,58 @@
+parted /dev/nvme0n1 mklabel gpt
+parted /dev/nvme0n1 mkpart 'efi' 1MiB 1536MiB --align optimal
+parted /dev/nvme0n1 mkpart 'boot' 1536MiB 2GiB --align optimal
+parted /dev/nvme0n1 mkpart 'swap' 2GiB 18GiB --align optimal
+parted /dev/nvme0n1 mkpart 'root0' 18GiB 100% --align optimal
+
+parted /dev/sda mklabel gpt
+parted /dev/sda mkpart 'backup' 1MiB 120GiB --align optimal
+parted /dev/sda mkpart 'root1' 120GiB 100% --align optimal
+
+parted /dev/nvme0n1 set 1 esp on
+
+cryptsetup luksFormat --type luks2 --pbkdf argon2id /dev/nvme0n1p3
+cryptsetup luksFormat --type luks2 --pbkdf argon2id /dev/nvme0n1p4
+cryptsetup luksFormat --type luks2 --pbkdf argon2id /dev/sda1
+cryptsetup luksFormat --type luks2 --pbkdf argon2id /dev/sda2
+
+cryptsetup config --label lswap /dev/nvme0n1p3
+cryptsetup config --label lroot0 /dev/nvme0n1p4
+cryptsetup config --label lbackup /dev/sda1
+cryptsetup config --label lroot1 /dev/sda2
+
+cryptsetup open /dev/nvme0n1p3 mswap
+cryptsetup open /dev/nvme0n1p4 mroot0
+cryptsetup open /dev/sda1 mbackup
+cryptsetup open /dev/sda2 mroot1
+
+mkfs.fat -F32 /dev/nvme0n1p1
+mkfs.ext4 /dev/nvme0n1p2
+mkfs.btrfs -d raid0 -m raid1 --csum XXHASH --label rootfs /dev/mapper/mroot0 /dev/mapper/mroot1
+mkfs.btrfs --csum XXHASH --label backupfs /dev/mapper/mbackup
+mkswap /dev/mapper/mswap
+
+mount /dev/mapper/mroot0 /mnt
+btrfs subvolume create /mnt/@
+btrfs subvolume create /mnt/@home
+btrfs subvolume create /mnt/@cache
+btrfs subvolume create /mnt/@tmp
+btrfs subvolume create /mnt/@snapshots
+umount /mnt
+
+mount /dev/mapper/mbackup /mnt/media/backup
+btrfs subvolume create /mnt/media/backups/@rootsnapshots
+btrfs subvolume create /mnt/media/backups/@homesnapshots
+umount /mnt/media/backup
+
+mount -o noatime,nodiratime,compress=no,subvol=@ /dev/mapper/mroot0 /mnt
+mount --mkdir -o noatime,nodiratime,compress=no,subvol=@home /dev/mapper/mroot0 /mnt/home
+mount -o noatime,nodiratime,compress=no,subvol=@cache /dev/mapper/mroot0 /mnt/var/cache
+mount -o noatime,nodiratime,compress=no,subvol=@tmp /dev/mapper/mroot0 /mnt/tmp
+mount --mkdir -o noatime,nodiratime,compress=no,subvol=@snapshots /dev/mapper/mroot0 /mnt/var/.snapshots
+
+mount --mkdir -o noatime,nodiratime,compress=zstd,autodefrag,noexec,ro subvol=@rootsnapshots /dev/mapper/mbackup /mnt/media/backup/root
+mount --mkdir -o noatime,nodiratime,compress=zstd,autodefrag,noexec,ro subvol=@homesnapshots /dev/mapper/mbackup /mnt/media/backup/home
+
+mount --mkdir /dev/nvme0n1p1 /mnt/efi
+mount --mkdir /dev/nvme0n1p2 /mnt/boot
+swapon /dev/mapper/cryptswap

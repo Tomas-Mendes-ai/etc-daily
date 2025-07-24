@@ -1,0 +1,6 @@
+pacman-key --init
+pacman-key --populate archlinux
+
+pacman -Syu amd-ucode btrfs btrfs-progs man-db man-pages nano curl wget git openssh zsh systemd-ukify flatpak base-devel nvidia-open plasma-meta plymouth-kcm breeze-plymouth flatpak-kcm kinfocenter vulkan-radeon nvidia-settings efitools sbsigntools mokutil pacman-contrib system-config-printer cups cups-pdf nss-mdns svg-part okular kolourpaint koko kamera gwenview kdegraphics-thumbnailers nvtop power-profiles-daemon efibootmgr kate kwalletmanager audiotube kamoso plasmatube kdeconnect kio-zeroconf ktorrent calligra kontact kalarm dolphin kjournald partitionmanager ark filelight kcalc kcharselect kleopatra konsole vivaldi keepassxc efitools gamescope ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono wezterm
+
+pacman -Syu --asdeps 7zip arj lrzip lzop unrar ffmpegthumbs kde-cli-tools kdegraphics-thumbnailers kio-admin dolphin-plugins kdepim-addons kmail korganizer kaddressbook akregator vivaldi-ffmpeg-codecs

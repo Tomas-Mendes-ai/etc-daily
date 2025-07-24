@@ -1,0 +1,22 @@
+systemctl enable paccache.timer
+systemctl enable systemd-timesyncd.service
+systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
+systemctl enable systemd-resolved
+systemctl enable sddm.service
+systemctl enable bluetooth.service
+systemctl enable avahi-daemon.socket
+systemctl enable cups.socket
+systemctl enable NetworkManager.service
+systemctl enable power-profiles-daemon.service
+systemctl enable mariadb.service
+
+systemctl disable systemd-boot-update.service
+
+systemctl start paccache.timer
+systemctl start systemd-timesyncd.service
+systemctl start nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
+systemctl start systemd-resolved
+systemctl start sddm.service
+systemctl start bluetooth.service
+systemctl start NetworkManager.service
+systemctl start power-profiles-daemon.service

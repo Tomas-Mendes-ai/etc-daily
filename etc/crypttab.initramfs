@@ -1,0 +1,3 @@
+mroot0 UUID=<uuid> none luks
+mroot1 UUID=<uuid> none luks
+mswap UUID=<uuid> none luks
