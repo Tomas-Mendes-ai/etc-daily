@@ -1,0 +1,6 @@
+[Unit]
+Description=Weekly btrfs snapshots
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/btrfs-snapshot-script.sh

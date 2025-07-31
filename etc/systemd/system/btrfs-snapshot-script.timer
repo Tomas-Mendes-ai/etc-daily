@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer for weekly btrfs snapshots
+After=network-online.target
+Wants=network-online.target
+
+[Timer]
+OnCalendar=Sat 03:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
