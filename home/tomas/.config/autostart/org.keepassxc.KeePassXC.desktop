@@ -1,0 +1,17 @@
+[Desktop Entry]
+Categories=Utility;Security;Qt;
+Exec=keepassxc '~/.local/share/keepassxc/passwords.kdbx' --keyfile '~/.local/share/keepassxc/passwords.key'
+GenericName=Password Manager
+Icon=keepassxc
+MimeType=application/x-keepass2;
+Name=KeePassXC
+StartupNotify=true
+StartupWMClass=keepassxc
+Terminal=false
+TryExec=keepassxc
+Type=Application
+Version=1.0
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=2
+X-KDE-autostart-after=panel
+X-LXQt-Need-Tray=true
