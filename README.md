@@ -1,9 +1,9 @@
 # /etc/daily
 
-Backup of the configs etc., I'm using on my daily driver.  
+Backup of the configs, packages, dotfiles, etc., I'm using on my daily driver.  
 Made it public for the curious/anyone who may find it useful.
 
-## (Relevant) system info
+### (Relevant) system info
 
 OS: Arch Linux  
 RAM: 16GB DDR4  
@@ -11,36 +11,57 @@ CPU: AMD RYZEN 5 5600H
 dGPU: NVIDIA RTX 3050 Mobile  
 Storage: 256GB NVMe SSD + 256GB SATA SSD  
 
-## Partitioning
+### Partitioning
 
 - Full Disk Encryption using Luks.
 - /efi partition for the bootloader and the Unified Kernel Images.
-- notabily, no boot partition since UKI's (sort of) deprecate the need for two partitions.
-- swap partition with 16GiB so I can hibernate.
-- one 120GiB btrfs partition for snapshots and backups (might be small, hope compression handles it)  .
-- two btrfs partition using raid0 for data and raid1 for metadata as a root partition.
+- Notabily, no boot partition since UKI's (sort of) deprecate the need for two partitions.
+- Swap partition with 16GiB to suport hibernation.  
+  
+### Decryption  
 
-## Decryption
-
-- mkinitcpio configured to include the proper services in the initramfs.
-- systemd-cryptsetup handles decryption.
-- currently queries for the decryption key on boot. Thankfully the key is cached by the kernel and it's only required to be typed once.
-- Will upgrade to a keyfile-based flow and enroll it in the TPM protected by PCRs and a PIN
-
-## Secure Boot
+- /etc/cmdline.d/* /etc/mkinitcpio.conf.d/* /etc/mkinitcpio.d/* /etc/crypttab*
+- Required services included in initramfs using mkinitcpio hooks,
+- Systemd-cryptsetup handles decryption at boot.
+- Decryption of / and swap is password-based. Kernel caching in RAM ensures only one password-prompt is needed.
+- Will upgrade to a TPM-enrolled keyfile.
+  
+### Secure Boot  
 
 - WIP
 - In the processes of making my PKI.
 - Will then enroll the PK, KEK, and db certificates in the firmware.
 - Will probably use systemd-ukify to automatically sign the UKIs after it builds them.
+  
+### DNS  
 
-## DNS
-
+- /etc/systemd/resolved.conf.d/*
 - Configured systemd-resolvd's stub (@127.0.0.53) to use DoT.
-- Right now I have to edit any connection to only use DHCP for addresses and manually configure the DNS to point to the stub.
-- Would very much appreciate NetworkManager just doing that automatically for every new connection but no luck finding that config yet.
+- As of now any new connection must have its DHCP and DNS edited to use the stub.
+  
+### Kernel Parameters  
 
-## Todo:
+- /etc/sysctl.d/*
+- Mostly related to network security and security in general
+  
+### SSHD  
+
+- /etc/ssh/sshd_config.d/*
+- Set several configs to harden ssh access
+  
+### PAM  
+
+- /etc/security/access.d/* /etc/pam.d/*
+- Root can only login locally
+- My user can login from anywhere
+- All others logins are explicitly disabled
+- Only users in group wheel can use 'su' and 'su -l'
+  
+### Firewall  
+
+- WIP
+  
+### Todo:  
 
 - Finish this readme by explaining the rest of the configs.
 - Setup secure boot
