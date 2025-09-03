@@ -1,6 +1,5 @@
 parted /dev/nvme0n1 mklabel gpt
-parted /dev/nvme0n1 mkpart 'efi' 1MiB 1536MiB --align optimal
-parted /dev/nvme0n1 mkpart 'boot' 1536MiB 2GiB --align optimal
+parted /dev/nvme0n1 mkpart 'efi' 1MiB 2GiB --align optimal
 parted /dev/nvme0n1 mkpart 'swap' 2GiB 18GiB --align optimal
 parted /dev/nvme0n1 mkpart 'root0' 18GiB 100% --align optimal
 
@@ -34,7 +33,8 @@ mkswap /dev/mapper/mswap
 mount /dev/mapper/mroot0 /mnt
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
-btrfs subvolume create /mnt/@cache
+btrfs subvolume create /mnt/@varcache
+btrfs subvolume create /mnt/@vartmp
 btrfs subvolume create /mnt/@tmp
 btrfs subvolume create /mnt/@snapshots
 umount /mnt
@@ -45,13 +45,14 @@ btrfs subvolume create /mnt/media/backups/@homesnapshots
 umount /mnt/media/backup
 
 mount -o noatime,nodiratime,compress=no,subvol=@ /dev/mapper/mroot0 /mnt
-mount --mkdir -o noatime,nodiratime,compress=no,subvol=@home /dev/mapper/mroot0 /mnt/home
-mount -o noatime,nodiratime,compress=no,subvol=@cache /dev/mapper/mroot0 /mnt/var/cache
-mount -o noatime,nodiratime,compress=no,subvol=@tmp /dev/mapper/mroot0 /mnt/tmp
-mount --mkdir -o noatime,nodiratime,compress=no,subvol=@snapshots /dev/mapper/mroot0 /mnt/var/.snapshots
+mount --mkdir -o noatime,nodiratime,compress=zstd:4,subvol=@home /dev/mapper/mroot0 /mnt/home
+mount --mkdir -o noatime,nodiratime,compress=zstd:4,subvol=@varcache /dev/mapper/mroot0 /mnt/var/cache
+mount --mkdir -o noatime,nodiratime,compress=zstd:4,subvol=@vartmp /dev/mapper/root0 /mnt/var/tmp
+mount --mkdir -o noatime,nodiratime,compress=zstd:4,subvol=@tmp /dev/mapper/mroot0 /mnt/tmp
+mount --mkdir -o noatime,nodiratime,compress=zstd:4,subvol=@snapshots /dev/mapper/mroot0 /mnt/var/.snapshots
 
-mount --mkdir -o noatime,nodiratime,compress=zstd,autodefrag,noexec,ro subvol=@rootsnapshots /dev/mapper/mbackup /mnt/media/backup/root
-mount --mkdir -o noatime,nodiratime,compress=zstd,autodefrag,noexec,ro subvol=@homesnapshots /dev/mapper/mbackup /mnt/media/backup/home
+mount --mkdir -o noatime,nodiratime,compress=zstd:9,autodefrag,noexec,ro,subvol=@rootsnapshots /dev/mapper/mbackup /mnt/media/backup/root
+mount --mkdir -o noatime,nodiratime,compress=zstd:9,autodefrag,noexec,ro,subvol=@homesnapshots /dev/mapper/mbackup /mnt/media/backup/home
 
 mount --mkdir /dev/nvme0n1p1 /mnt/efi
 mount --mkdir /dev/nvme0n1p2 /mnt/boot
